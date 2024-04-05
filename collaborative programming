@@ -1,0 +1,14 @@
+
+class Calendar:
+    def __init__(self, year):
+        self.year = year
+        self.events = {}  # Dictionary to store events
+
+"" reminder method below"
+
+    def set_reminder(self, event, days_before):
+        reminder_date = event.date - timedelta(days=days_before)
+        if reminder_date in self.events:
+            self.events[reminder_date].append(f"Reminder: {event.description}")
+        else:
+            self.events[reminder_date] = [f"Reminder: {event.description}"]
