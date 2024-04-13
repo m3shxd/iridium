@@ -12,3 +12,13 @@ class Calendar:
             self.events[reminder_date].append(f"Reminder: {event.description}")
         else:
             self.events[reminder_date] = [f"Reminder: {event.description}"]
+
+"""events method!"""
+class Event:
+    def __init__(self, date, description):
+        # Ensure that the date provided is a datetime object
+        if isinstance(date, datetime):
+            self.date = date
+        else:
+            raise ValueError("date must be a datetime object")
+        self.description = description
