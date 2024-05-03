@@ -1,10 +1,9 @@
+from datetime import datetime, timedelta
 
 class Calendar:
     def __init__(self, year):
         self.year = year
         self.events = {}  # Dictionary to store events
-
-"" reminder method below""
 
     def set_reminder(self, event, days_before):
         reminder_date = event.date - timedelta(days=days_before)
@@ -17,14 +16,12 @@ class Calendar:
         if event.date in self.events:
             self.events[event.date].remove(event.description)
 
-
     def display_all_events(self):
         for date, events in self.events.items():
             print(f"Date: {date.strftime('%Y-%m-%d')}")
             for event in events:
                 print(f"- {event}")
 
-"""events method!"""
 class Event:
     def __init__(self, date, description):
         # Ensure that the date provided is a datetime object
@@ -34,4 +31,21 @@ class Event:
             raise ValueError("date must be a datetime object")
         self.description = description
 
+# Create an instance of Calendar for the year 2024
+my_calendar = Calendar(year=2024)
 
+# Create some events
+event1 = Event(datetime(2024, 5, 3), "326 Presentation")
+event2 = Event(datetime(2024, 5, 27), "Dentist Appointment")
+event3 = Event(datetime(2024, 6, 1), "Internship Interview")
+
+# Add events to the calendar
+my_calendar.events[event1.date] = [event1.description]
+my_calendar.events[event2.date] = [event2.description]
+my_calendar.events[event3.date] = [event3.description]
+
+# Set a reminder for the first event
+my_calendar.set_reminder(event1, days_before=7)
+
+# Display all events in the calendar
+my_calendar.display_all_events()
