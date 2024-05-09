@@ -1,3 +1,9 @@
-# avindra
-# d'angelo
-# final project
+Group Iridium 
+----------------
+
+Avindra | D'Angelo  
+        |  
+        |
+        |
+        |
+        |
