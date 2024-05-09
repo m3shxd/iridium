@@ -4,17 +4,27 @@ class Calendar:
     def __init__(self, year):
         self.year = year
         self.events = {}  # Dictionary to store events
+        self.notes = {}   # Dictionary to store notes
+
+    def add_event(self, event):
+        if event.date in self.events:
+            self.events[event.date].append(event.description)
+        else:
+            self.events[event.date] = [event.description]
 
     def set_reminder(self, event, days_before):
         reminder_date = event.date - timedelta(days=days_before)
+        reminder_description = f"Reminder: {event.description}"
         if reminder_date in self.events:
-            self.events[reminder_date].append(f"Reminder: {event.description}")
+            self.events[reminder_date].append(reminder_description)
         else:
-            self.events[reminder_date] = [f"Reminder: {event.description}"]
+            self.events[reminder_date] = [reminder_description]
 
     def delete_event(self, event):
         if event.date in self.events:
             self.events[event.date].remove(event.description)
+            if not self.events[event.date]:  # Remove the key if no more events are left on that date
+                del self.events[event.date]
 
     def add_note(self, date, note):
         if date in self.notes:
@@ -23,9 +33,10 @@ class Calendar:
             self.notes[date] = [note]
 
     def edit_event(self, event, new_description):
-        if event.date in self.events:
-            self.events[event.date] = [new_description]
-
+        if event.date in self.events and event.description in self.events[event.date]:
+            index = self.events[event.date].index(event.description)
+            self.events[event.date][index] = new_description
+            event.description = new_description  # Update the event object as well
 
     def get_notes_for_date(self, date):
         if date in self.notes:
@@ -33,41 +44,48 @@ class Calendar:
         else:
             return []
 
-    def display_all_events(self):
-        for date, events in self.events.items():
+    def display_all_events_and_notes(self):
+        print("Events:")
+        for date, events in sorted(self.events.items()):
             print(f"Date: {date.strftime('%Y-%m-%d')}")
             for event in events:
                 print(f"- {event}")
+        print("Notes:")
+        for date, notes in sorted(self.notes.items()):
+            print(f"Date: {date.strftime('%Y-%m-%d')}")
+            for note in notes:
+                print(f"- {note}")
 
 class Event:
     def __init__(self, date, description):
-        # Ensure that the date provided is a datetime object
-        if isinstance(date, datetime):
-            self.date = date
-        else:
+        if not isinstance(date, datetime):
             raise ValueError("date must be a datetime object")
+        self.date = date
         self.description = description
 
 # Create an instance of Calendar for the year 2024
 my_calendar = Calendar(year=2024)
 
 # Create some events
-event1 = Event(datetime(2024, 5, 3), "326 Presentation")
+event1 = Event(datetime(2024, 5, 13), "326 Presentation")
 event2 = Event(datetime(2024, 5, 27), "Dentist Appointment")
 event3 = Event(datetime(2024, 6, 1), "Internship Interview")
 
 # Add events to the calendar
-my_calendar.events[event1.date] = [event1.description]
-my_calendar.events[event2.date] = [event2.description]
-my_calendar.events[event3.date] = [event3.description]
+my_calendar.add_event(event1)
+my_calendar.add_event(event2)
+my_calendar.add_event(event3)
 
 # Add a note for a specific date
-note_date = datetime(2024, 5, 3)
+note_date = datetime(2024, 5, 13)
 note_text = "Remember to prepare slides for the presentation"
 my_calendar.add_note(note_date, note_text)
 
 # Set a reminder for the first event
 my_calendar.set_reminder(event1, days_before=7)
 
-# Display all events in the calendar
-my_calendar.display_all_events()
+# Edit an event description
+my_calendar.edit_event(event1, "Updated 326 Presentation")
+
+# Display all events and notes in the calendar
+my_calendar.display_all_events_and_notes()
