@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 
 class Calendar:
     def __init__(self, year):
@@ -8,22 +9,23 @@ class Calendar:
 
     def add_event(self, event):
         if event.date in self.events:
-            self.events[event.date].append(event.description)
+            self.events[event.date].append(event)
         else:
-            self.events[event.date] = [event.description]
+            self.events[event.date] = [event]
 
     def set_reminder(self, event, days_before):
         reminder_date = event.date - timedelta(days=days_before)
-        reminder_description = f"Reminder: {event.description}"
+        reminder_description = f"Reminder: {event.description} (Priority: {event.priority})"
+        reminder_event = Event(reminder_date, reminder_description, priority=event.priority)
         if reminder_date in self.events:
-            self.events[reminder_date].append(reminder_description)
+            self.events[reminder_date].append(reminder_event)
         else:
-            self.events[reminder_date] = [reminder_description]
+            self.events[reminder_date] = [reminder_event]
 
     def delete_event(self, event):
-        if event.date in self.events:
-            self.events[event.date].remove(event.description)
-            if not self.events[event.date]:  # Remove the key if no more events are left on that date
+        if event.date in self.events and event in self.events[event.date]:
+            self.events[event.date].remove(event)
+            if not self.events[event.date]:
                 del self.events[event.date]
 
     def add_note(self, date, note):
@@ -33,48 +35,59 @@ class Calendar:
             self.notes[date] = [note]
 
     def edit_event(self, event, new_description):
-        if event.date in self.events and event.description in self.events[event.date]:
-            index = self.events[event.date].index(event.description)
-            self.events[event.date][index] = new_description
-            event.description = new_description  # Update the event object as well
+        if event.date in self.events and event in self.events[event.date]:
+            index = self.events[event.date].index(event)
+            self.events[event.date][index].description = new_description
 
-    def get_notes_for_date(self, date):
-        if date in self.notes:
-            return self.notes[date]
-        else:
-            return []
+    def schedule_recurring_event(self, event, recurrence):
+        current_date = event.date
+        while current_date.year <= self.year:
+            new_event = Event(current_date, event.description, priority=event.priority)
+            self.add_event(new_event)
+            if recurrence == 'daily':
+                current_date += timedelta(days=1)
+            elif recurrence == 'weekly':
+                current_date += timedelta(weeks=1)
+            elif recurrence == 'monthly':
+                current_date += relativedelta(months=1)
+            elif recurrence == 'yearly':
+                current_date += relativedelta(years=1)
 
     def display_all_events_and_notes(self):
         print("Events:")
-        for date, events in sorted(self.events.items()):
+        for date in sorted(self.events):
             print(f"Date: {date.strftime('%Y-%m-%d')}")
-            for event in events:
-                print(f"- {event}")
+            for event in sorted(self.events[date], key=lambda e: e.priority):
+                print(f"- {event.description} (Priority: {event.priority})")
         print("Notes:")
-        for date, notes in sorted(self.notes.items()):
+        for date in sorted(self.notes):
             print(f"Date: {date.strftime('%Y-%m-%d')}")
-            for note in notes:
+            for note in self.notes[date]:
                 print(f"- {note}")
 
 class Event:
-    def __init__(self, date, description):
+    def __init__(self, date, description, priority='Low'):
         if not isinstance(date, datetime):
             raise ValueError("date must be a datetime object")
         self.date = date
         self.description = description
+        self.priority = priority  # 'Low', 'Medium', 'High'
 
 # Create an instance of Calendar for the year 2024
 my_calendar = Calendar(year=2024)
 
-# Create some events
-event1 = Event(datetime(2024, 5, 13), "326 Presentation")
-event2 = Event(datetime(2024, 5, 27), "Dentist Appointment")
-event3 = Event(datetime(2024, 6, 1), "Internship Interview")
+# Create some events with priority
+event1 = Event(datetime(2024, 5, 13), "326 Presentation", priority='High')
+event2 = Event(datetime(2024, 5, 27), "Dentist Appointment", priority='Medium')
+event3 = Event(datetime(2024, 6, 1), "Internship Interview", priority='High')
 
 # Add events to the calendar
 my_calendar.add_event(event1)
 my_calendar.add_event(event2)
 my_calendar.add_event(event3)
+
+# Schedule a recurring event
+my_calendar.schedule_recurring_event(event2, 'monthly')
 
 # Add a note for a specific date
 note_date = datetime(2024, 5, 13)
