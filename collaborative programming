@@ -16,6 +16,16 @@ class Calendar:
         if event.date in self.events:
             self.events[event.date].remove(event.description)
 
+    def add_note(self, date, note):
+        if date in self.notes:
+            self.notes[date].append(note)
+        else:
+            self.notes[date] = [note]
+
+    def edit_event(self, event, new_description):
+        if event.date in self.events:
+            self.events[event.date] = [new_description]
+
     def display_all_events(self):
         for date, events in self.events.items():
             print(f"Date: {date.strftime('%Y-%m-%d')}")
